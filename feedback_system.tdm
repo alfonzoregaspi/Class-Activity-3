@@ -1,0 +1,55 @@
+{
+    "summary": {
+        "title": "Feedback System Threat Model",
+        "owner": "User",
+        "description": "Basic threat model for a feedback system.",
+        "id": "feedback-system-tm",
+        "created": "2026-02-06"
+    },
+    "detail": {
+        "diagrams": [
+            {
+                "id": "diagram-1",
+                "title": "Feedback Flow",
+                "diagramType": "DFD",
+                "cells": [
+                    {
+                        "id": "user",
+                        "type": "tm.Actor",
+                        "text": "User",
+                        "x": 100,
+                        "y": 100
+                    },
+                    {
+                        "id": "system",
+                        "type": "tm.Process",
+                        "text": "Feedback System",
+                        "x": 300,
+                        "y": 100
+                    },
+                    {
+                        "id": "db",
+                        "type": "tm.Store",
+                        "text": "Database",
+                        "x": 500,
+                        "y": 100
+                    },
+                    {
+                        "id": "flow1",
+                        "type": "tm.Flow",
+                        "text": "Submit Feedback",
+                        "source": "user",
+                        "target": "system"
+                    },
+                    {
+                        "id": "flow2",
+                        "type": "tm.Flow",
+                        "text": "Store Feedback",
+                        "source": "system",
+                        "target": "db"
+                    }
+                ]
+            }
+        ]
+    }
+}
