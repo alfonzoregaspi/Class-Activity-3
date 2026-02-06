@@ -1,65 +1,182 @@
-[
-  {
-    "title": "Web Application Spoofing",
-    "type": "Spoofing",
-    "description": "The web application may be spoofed by an attacker, potentially allowing unauthorized access to the browser client.",
-    "mitigation": "Implement TLS certificates, DNS security, and application integrity checks.",
-    "component": "Web Application"
+{
+  "summary": {
+    "title": "Feedback System Threat Model",
+    "owner": "Regaspi, Alfonzo Gabriel Alexi D.",
+    "description": "Threat model of browser client, web app, SQL database, LDAP, and feedback data flows.",
+    "id": "1"
   },
-  {
-    "title": "Malicious SQL Code Injection",
-    "type": "Tampering",
-    "description": "SQL injection occurs when malicious SQL code is inserted into input fields and executed on the SQL Server.",
-    "mitigation": "Use parameterized queries, input validation, ORM frameworks.",
-    "component": "SQL Database"
-  },
-  {
-    "title": "LDAP Injection",
-    "type": "Tampering",
-    "description": "LDAP injection may occur because user authentication relies on an LDAP query.",
-    "mitigation": "Sanitize input, use parameterized LDAP queries, validate all user input.",
-    "component": "LDAP"
-  },
-  {
-    "title": "Feedback Data Tampering",
-    "type": "Tampering",
-    "description": "Data flowing through saved feedback comments may be tampered with by an attacker due to lack of input validation.",
-    "mitigation": "Verify all input for correctness using allow-list validation.",
-    "component": "Insert Feedback Comments data flow between Browser Client and Web Application"
-  },
-  {
-    "title": "Unverified SQL Database Data Writes",
-    "type": "Repudiation",
-    "description": "The SQL Database may deny writing data received across the trust boundary.",
-    "mitigation": "Add logging/auditing: record source, timestamp, and summary of data.",
-    "component": "SQL Database"
-  },
-  {
-    "title": "Missing Web Application Logging",
-    "type": "Repudiation",
-    "description": "The web application may deny receiving data from another process.",
-    "mitigation": "Add logging/auditing: record source, timestamp, and summary of data.",
-    "component": "Web Application"
-  },
-  {
-    "title": "Missing LDAP Write Logging",
-    "type": "Repudiation",
-    "description": "LDAP may deny writing data it receives across the trust boundary.",
-    "mitigation": "Add logging/auditing: record source, timestamp, and summary of data.",
-    "component": "LDAP"
-  },
-  {
-    "title": "Sensitive Feedback Data Disclosure",
-    "type": "Information Disclosure",
-    "description": "Feedback comments may be intercepted by an attacker, leading to unauthorized information disclosure.",
-    "mitigation": "Encrypt the data flow (HTTPS/TLS).",
-    "component": "Insert Feedback Comments data flow between Browser Client and Web Application"
-  },
-  {
-    "title": "Unauthorized Data Access in LDAP Directory",
-    "type": "Information Disclosure",
-    "description": "Weak LDAP protections may allow attackers to access sensitive information.",
-    "mitigation": "Review and apply proper authorization policies.",
-    "component": "LDAP"
+  "detail": {
+    "diagrams": [
+      {
+        "id": "diagram-1",
+        "title": "System Data Flow Diagram",
+        "diagramType": "STRIDE",
+        "cells": [
+
+          /* ===== ENTITIES & COMPONENTS ===== */
+
+          {
+            "type": "tm.ExternalEntity",
+            "id": "browser-client",
+            "position": { "x": 150, "y": 100 },
+            "name": "Browser Client"
+          },
+          {
+            "type": "tm.Process",
+            "id": "web-application",
+            "position": { "x": 450, "y": 100 },
+            "name": "Web Application"
+          },
+          {
+            "type": "tm.Datastore",
+            "id": "sql-database",
+            "position": { "x": 450, "y": 300 },
+            "name": "SQL Database"
+          },
+          {
+            "type": "tm.Datastore",
+            "id": "ldap-directory",
+            "position": { "x": 750, "y": 100 },
+            "name": "LDAP"
+          },
+
+          /* ===== TRUST BOUNDARIES ===== */
+
+          {
+            "type": "tm.Boundary",
+            "id": "server-trust-boundary",
+            "position": { "x": 400, "y": 50 },
+            "size": { "width": 480, "height": 350 },
+            "name": "Server Trust Boundary"
+          },
+
+          /* ===== DATA FLOWS ===== */
+
+          {
+            "type": "tm.Flow",
+            "id": "flow-insert-feedback",
+            "source": "browser-client",
+            "target": "web-application",
+            "name": "Insert Feedback Comments"
+          },
+          {
+            "type": "tm.Flow",
+            "id": "flow-web-to-sql",
+            "source": "web-application",
+            "target": "sql-database",
+            "name": "Store Feedback"
+          },
+          {
+            "type": "tm.Flow",
+            "id": "flow-web-to-ldap",
+            "source": "web-application",
+            "target": "ldap-directory",
+            "name": "User Authentication"
+          },
+
+          /* ===== THREATS ===== */
+
+          /* --- Web Application Spoofing --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-web-spoof",
+            "associatedId": "web-application",
+            "title": "Web Application Spoofing",
+            "type": "Spoofing",
+            "description": "The web application may be spoofed by an attacker.",
+            "mitigation": "Implement TLS certificates, DNS security, and application integrity checks."
+          },
+
+          /* --- SQL Injection --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-sql-injection",
+            "associatedId": "sql-database",
+            "title": "Malicious SQL Code Injection",
+            "type": "Tampering",
+            "description": "SQL injection using malicious SQL code.",
+            "mitigation": "Use parameterized queries, ORM, and strict input validation."
+          },
+
+          /* --- LDAP Injection --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-ldap-injection",
+            "associatedId": "ldap-directory",
+            "title": "LDAP Injection",
+            "type": "Tampering",
+            "description": "LDAP injection due to unsafe LDAP queries.",
+            "mitigation": "Use parameterized LDAP queries and validate input."
+          },
+
+          /* --- Feedback Tampering --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-feedback-tamper",
+            "associatedId": "flow-insert-feedback",
+            "title": "Feedback Data Tampering",
+            "type": "Tampering",
+            "description": "Feedback comments may be modified by an attacker.",
+            "mitigation": "Strict allow-list input validation."
+          },
+
+          /* --- SQL Repudiation --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-sql-repudiation",
+            "associatedId": "sql-database",
+            "title": "Unverified SQL Database Data Writes",
+            "type": "Repudiation",
+            "description": "SQL Database may deny writing received data.",
+            "mitigation": "Implement detailed write logging and auditing."
+          },
+
+          /* --- Web App Logging Missing --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-web-repudiation",
+            "associatedId": "web-application",
+            "title": "Missing Web Application Logging",
+            "type": "Repudiation",
+            "description": "Web application may deny receiving data.",
+            "mitigation": "Add request and event logging."
+          },
+
+          /* --- LDAP Logging Missing --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-ldap-repudiation",
+            "associatedId": "ldap-directory",
+            "title": "Missing LDAP Write Logging",
+            "type": "Repudiation",
+            "description": "LDAP may deny writing data received across trust boundary.",
+            "mitigation": "Add LDAP audit logs."
+          },
+
+          /* --- Feedback Data Disclosure --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-feedback-disclosure",
+            "associatedId": "flow-insert-feedback",
+            "title": "Sensitive Feedback Data Disclosure",
+            "type": "Information Disclosure",
+            "description": "Feedback comments may be intercepted by attackers.",
+            "mitigation": "Encrypt data flow using HTTPS/TLS."
+          },
+
+          /* --- Unauthorized LDAP Read --- */
+          {
+            "type": "tm.Threat",
+            "id": "threat-ldap-disclosure",
+            "associatedId": "ldap-directory",
+            "title": "Unauthorized Data Access in LDAP Directory",
+            "type": "Information Disclosure",
+            "description": "Improper LDAP permissions may expose private data.",
+            "mitigation": "Review and fix LDAP authorization settings."
+          }
+
+        ]
+      }
+    ]
   }
-]
+}
